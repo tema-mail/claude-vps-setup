@@ -1,0 +1,493 @@
+<!doctype html><html lang="ru"><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style><title>Claude Code на новом VPS</title></head><body>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Тот же стиль, что у «Claude Code на новом компе»: колонка-оглавление слева, шаги справа */
+:root{
+  --ground:#F2F4F3; --surface:#FFFFFF; --surface-2:#E9EDEB; --line:#D5DBD8;
+  --ink:#151C1A; --muted:#5E6B67; --accent:#0F6E56; --accent-ink:#0B5241; --accent-soft:#DDEFE8;
+  --warn:#A3520B; --warn-soft:#FBEBD9; --code-bg:#1A2220; --code-ink:#DCE6E1; --code-muted:#7E948B;
+  --btn-bg:rgba(255,255,255,.08); --btn-line:rgba(255,255,255,.14); --btn-hover:rgba(255,255,255,.16);
+  --shadow:0 1px 2px rgba(21,28,26,.06),0 6px 20px -8px rgba(21,28,26,.12);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#0F1412; --surface:#161C1A; --surface-2:#1E2624; --line:#2B3532;
+    --ink:#E4EBE8; --muted:#95A49F; --accent:#3FB58E; --accent-ink:#7ED8B8; --accent-soft:#183129;
+    --warn:#E6A15A; --warn-soft:#3A2A16; --code-bg:#0B100E; --code-ink:#D5E0DB; --code-muted:#6F847C;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 6px 20px -8px rgba(0,0,0,.5); color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#0F1412; --surface:#161C1A; --surface-2:#1E2624; --line:#2B3532;
+  --ink:#E4EBE8; --muted:#95A49F; --accent:#3FB58E; --accent-ink:#7ED8B8; --accent-soft:#183129;
+  --warn:#E6A15A; --warn-soft:#3A2A16; --code-bg:#0B100E; --code-ink:#D5E0DB; --code-muted:#6F847C;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 6px 20px -8px rgba(0,0,0,.5); color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--ground);color:var(--ink);font:16px/1.55 "IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
+a{color:var(--accent-ink)}
+code,kbd,pre{font-family:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace}
+code{font-size:.92em;background:var(--surface-2);padding:.1em .4em;border-radius:4px;overflow-wrap:anywhere}
+kbd{font-size:.85em;border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;padding:.05em .4em;background:var(--surface)}
+h1,h2,h3{text-wrap:balance;line-height:1.2;margin:0}
+h1{font-size:clamp(28px,4.5vw,40px);font-weight:700;letter-spacing:-.01em}
+h2{font-size:22px;font-weight:600}
+h3{font-size:16px;font-weight:600}
+p{margin:0}
+.wrap{max-width:1140px;margin:0 auto;padding-inline:16px;padding-block:32px 72px}
+.eyebrow{font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-ink)}
+.lead{color:var(--muted);font-size:18px;max-width:62ch;margin-top:12px}
+.note{font-size:14px;color:var(--muted)}
+header.top{display:grid;gap:14px;padding-bottom:28px;border-bottom:1px solid var(--line);margin-bottom:28px}
+
+.layout{display:grid;grid-template-columns:230px minmax(0,1fr);gap:40px;align-items:start}
+nav.toc{position:sticky;top:env(safe-area-inset-top,0px);padding-top:4px}
+nav.toc ol{list-style:none;margin:0;padding:0;display:grid;gap:2px}
+nav.toc a{display:flex;gap:10px;align-items:baseline;text-decoration:none;color:var(--muted);font-size:14px;padding:6px 8px;border-radius:6px}
+nav.toc a:hover,nav.toc a:focus-visible{background:var(--surface);color:var(--ink);outline:none}
+nav.toc .n{font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--accent-ink);min-width:1.6em}
+nav.toc .toc-title{font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:0 8px 8px}
+
+main{display:grid;gap:44px;min-width:0}
+section.step{display:grid;gap:16px;scroll-margin-top:16px;min-width:0}
+.step-head{display:flex;gap:14px;align-items:baseline}
+.step-num{font-family:"IBM Plex Mono",monospace;font-size:13px;font-weight:500;color:var(--accent);background:var(--accent-soft);border-radius:999px;padding:2px 10px;white-space:nowrap}
+.prose{max-width:68ch;display:grid;gap:12px}
+.prose ul,.prose ol{margin:0;padding-left:1.3em;display:grid;gap:6px}
+.prose li::marker{color:var(--muted)}
+
+.cmd{position:relative;background:var(--code-bg);color:var(--code-ink);border-radius:8px;padding:12px 14px;overflow-x:auto;max-width:72ch}
+.cmd pre{margin:0;font-size:13.5px;line-height:1.55;white-space:pre}
+.cmd .lbl{font-family:"IBM Plex Sans",sans-serif;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--code-muted);margin-bottom:6px}
+.cmd button,.prompt-bar button{font:12px "IBM Plex Sans",sans-serif;color:var(--code-ink);background:var(--btn-bg);border:1px solid var(--btn-line);border-radius:5px;padding:3px 9px;cursor:pointer}
+.cmd button{position:absolute;top:8px;right:8px}
+.cmd button:hover,.prompt-bar button:hover{background:var(--btn-hover)}
+.cmd button:focus-visible,.prompt-bar button:focus-visible{outline:none;box-shadow:0 0 0 2px var(--accent)}
+
+/* большой блок задания для Codex */
+.prompt{background:var(--code-bg);color:var(--code-ink);border-radius:10px;overflow:hidden;box-shadow:var(--shadow);max-width:860px}
+.prompt-bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--btn-line)}
+.prompt-bar span{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--code-muted)}
+.prompt-bar button{font-size:13px;padding:6px 14px;background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+.prompt-bar button:hover{background:var(--accent-ink)}
+.prompt pre{margin:0;padding:14px;max-height:460px;overflow:auto;font-size:13px;line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere}
+
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden;max-width:820px}
+.facts div{background:var(--surface);padding:12px 14px;display:grid;gap:3px;min-width:0}
+.facts .k{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.facts .v{font-family:"IBM Plex Mono",monospace;font-size:14px;overflow-wrap:anywhere}
+
+.arch{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;gap:12px;align-items:stretch;max-width:900px}
+.arch .box{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px;display:grid;gap:8px;align-content:start;box-shadow:var(--shadow);min-width:0}
+.arch .box.srv{border-color:var(--accent);background:var(--accent-soft)}
+.arch .box h3{display:grid;gap:2px}
+.arch .box h3 small{font-weight:500;font-size:12px;color:var(--muted)}
+.arch ul{margin:0;padding-left:1.1em;font-size:14px;display:grid;gap:3px}
+.arch .link{display:grid;place-items:center;font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--accent-ink);text-align:center;gap:6px;padding:0 2px}
+.arch .link svg{width:48px;height:20px;overflow:visible}
+
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:14.5px}
+th,td{text-align:left;vertical-align:top;padding:10px 12px;border-top:1px solid var(--line)}
+th{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);border-top:0;background:var(--surface-2)}
+td:first-child{font-weight:600;min-width:170px}
+td .num{font-variant-numeric:tabular-nums}
+
+.callout{border-radius:8px;padding:12px 14px;font-size:14.5px;display:grid;gap:6px;max-width:72ch}
+.callout.warn{background:var(--warn-soft);border-left:3px solid var(--warn)}
+.callout.ok{background:var(--accent-soft);border-left:3px solid var(--accent)}
+.callout b{font-weight:600}
+
+.check{list-style:none;margin:0;padding:0;display:grid;gap:8px;max-width:72ch}
+.check li{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:start;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+.check input{margin-top:4px;accent-color:var(--accent);width:16px;height:16px}
+.check label{cursor:pointer}
+.check .sub{display:block;font-size:13.5px;color:var(--muted);margin-top:2px}
+
+.flow{list-style:none;margin:0;padding:0;display:grid;gap:0;max-width:760px;counter-reset:f}
+.flow li{display:grid;grid-template-columns:2.4em 1fr;gap:12px;padding:10px 0;border-top:1px solid var(--line)}
+.flow li:first-child{border-top:0}
+.flow .n{font-family:"IBM Plex Mono",monospace;font-size:13px;color:var(--accent-ink);padding-top:2px}
+.flow b{font-weight:600}
+.flow .who{display:inline-block;font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;border-radius:999px;padding:1px 8px;margin-left:6px;vertical-align:2px}
+.who.ai{background:var(--accent-soft);color:var(--accent-ink)}
+.who.me{background:var(--warn-soft);color:var(--warn)}
+
+footer{margin-top:56px;padding-top:20px;border-top:1px solid var(--line);font-size:13.5px;color:var(--muted);max-width:72ch}
+
+@media (max-width:820px){
+  .layout{grid-template-columns:1fr;gap:24px}
+  nav.toc{position:static}
+  nav.toc ol{grid-template-columns:repeat(auto-fill,minmax(200px,1fr))}
+  .arch{grid-template-columns:1fr}
+  .arch .link svg{transform:rotate(90deg)}
+}
+@media (prefers-reduced-motion:no-preference){.cmd button,.prompt-bar button{transition:background .15s}}
+</style>
+
+<div class="wrap">
+<header class="top">
+  <div class="eyebrow">Инструкция · перенос на аккаунт evolutioncar.nsk</div>
+  <h1>Claude Code на новом VPS: всё под ключ через Codex</h1>
+  <p class="lead">Отдаёшь Codex один текст, и он по шагам делает всё сам. Ставит Claude Code на сервер, переносит все наши скиллы, агентов и правила, подключает VS Code и скачивает весь набор на твой компьютер. Тебе остаётся ввести пароли, когда он попросит.</p>
+</header>
+
+<div class="layout">
+<nav class="toc" aria-label="Содержание">
+  <div class="toc-title">Разделы</div>
+  <ol>
+    <li><a href="#s0"><span class="n">0</span>Что получится</a></li>
+    <li><a href="#s1"><span class="n">1</span>Что подготовить</a></li>
+    <li><a href="#s2"><span class="n">2</span>Текст для Codex</a></li>
+    <li><a href="#s3"><span class="n">3</span>Что будет по шагам</a></li>
+    <li><a href="#s4"><span class="n">4</span>Что в наборе</a></li>
+    <li><a href="#s5"><span class="n">5</span>Проверка</a></li>
+    <li><a href="#s6"><span class="n">6</span>Если сломалось</a></li>
+  </ol>
+</nav>
+
+<main>
+
+<section class="step" id="s0">
+  <div class="step-head"><span class="step-num">0</span><h2>Что получится</h2></div>
+  <div class="arch">
+    <div class="box">
+      <h3>GitHub <small>tema-mail/claude-codex-kit · приватный</small></h3>
+      <ul>
+        <li>64 скилла и 12 агентов Claude</li>
+        <li>92 скилла и 2 агента Codex</li>
+        <li>Правила, хуки, память</li>
+        <li>Всё одним файлом</li>
+      </ul>
+    </div>
+    <div class="link"><svg viewBox="0 0 48 20" aria-hidden="true"><path d="M2 10 H40" stroke="currentColor" stroke-width="2" fill="none"/><path d="M34 4 L42 10 L34 16" stroke="currentColor" stroke-width="2" fill="none"/></svg>git clone</div>
+    <div class="box">
+      <h3>Твой компьютер <small>Mac или Windows</small></h3>
+      <ul>
+        <li>Codex ведёт установку</li>
+        <li>VS Code + Remote-SSH</li>
+        <li>Копия набора локально</li>
+      </ul>
+    </div>
+    <div class="link"><svg viewBox="0 0 48 20" aria-hidden="true"><path d="M2 10 H40" stroke="currentColor" stroke-width="2" fill="none"/><path d="M34 4 L42 10 L34 16" stroke="currentColor" stroke-width="2" fill="none"/></svg>SSH</div>
+    <div class="box srv">
+      <h3>Сервер evo-vps <small>Ubuntu, пользователь claude</small></h3>
+      <ul>
+        <li>Claude Code под evolutioncar.nsk</li>
+        <li>Node 22 для сайтов на Astro</li>
+        <li>Весь набор в <code>~/.claude</code></li>
+        <li>Проекты в <code>~/projects</code></li>
+      </ul>
+    </div>
+  </div>
+  <div class="callout ok"><p><b>Стек закреплён в правилах:</b> фронт сайтов всегда Astro. Бэкенд выбирает архитектор под задачу. Анимации по возможности на Preact, но можно и другое, если ситуация требует. Claude на сервере будет знать это с первой сессии.</p></div>
+</section>
+
+<section class="step" id="s1">
+  <div class="step-head"><span class="step-num">1</span><h2>Что подготовить</h2></div>
+  <ul class="check">
+    <li><input type="checkbox" id="c1"><label for="c1"><b>Сервер VPS</b> на Ubuntu 22.04 или 24.04, от 2 ГБ памяти<span class="sub">Из письма хостинга понадобятся IP-адрес и пароль root. Подойдёт любой хостинг, например FirstVDS.</span></label></li>
+    <li><input type="checkbox" id="c2"><label for="c2"><b>Аккаунт Claude</b> <code>evolutioncar.nsk@gmail.com</code><span class="sub">На нём должна быть подписка Claude Pro или Max. Вход через «Continue with Google». Пароль передадут отдельно.</span></label></li>
+    <li><input type="checkbox" id="c3"><label for="c3"><b>Доступ к GitHub</b>, чтобы скачать набор<span class="sub">Репозиторий приватный. Токен передадут отдельно, Codex спросит его на шаге 2.</span></label></li>
+    <li><input type="checkbox" id="c4"><label for="c4"><b>Codex</b> на компьютере (приложение или расширение VS Code)<span class="sub">Именно он выполняет команды. Нужно, чтобы ему был разрешён запуск команд в терминале.</span></label></li>
+    <li><input type="checkbox" id="c5"><label for="c5"><b>VPN</b><span class="sub">Нужен только для входа в Claude на шаге 10. Лучше выбрать ту же страну, где стоит сервер.</span></label></li>
+  </ul>
+</section>
+
+<section class="step" id="s2">
+  <div class="step-head"><span class="step-num">2</span><h2>Скопируй это в Codex</h2></div>
+  <div class="prose"><p>Нажми «Скопировать всё», открой Codex, вставь текст и отправь. Дальше Codex будет вести по шагам: сам запускает команды и спрашивает тебя, только когда нужен пароль или клик в браузере.</p></div>
+  <div class="prompt">
+    <div class="prompt-bar"><span>Задание для Codex · CODEX-ИНСТРУКЦИЯ.md</span><button type="button" id="copy-prompt">Скопировать всё</button></div>
+    <pre id="prompt-text"># Задание для Codex: развернуть Claude Code на VPS с набором скиллов
+
+Ты — Codex на компьютере пользователя. Цель: на сервере (VPS) работает Claude Code со всеми скиллами, агентами, правилами и памятью из репозитория `tema-mail/claude-codex-kit`; пользователь открывает его через VS Code (Remote-SSH); копия набора стоит и на этом компьютере.
+
+## Как вести пользователя
+
+- По-русски, коротко. Шаги строго по одному: выполнил → проверил вывод → следующий.
+- Команды, которые можешь выполнить сам в терминале этого компьютера, — выполняй сам и показывай результат.
+- Пароли вводит только пользователь (запрос пароля SSH, вход в Google). Не проси вставить пароль в чат, не сохраняй пароли и токены в файлы.
+- Токен GitHub нужен один раз, на шаге 2. На сервер его не передавай: набор уезжает туда архивом по SSH (шаг 8).
+- Ошибку разбирай по её выводу. Не переходи дальше, пока проверка шага не прошла.
+
+## Данные (спроси у пользователя в начале)
+
+| Что | Значение |
+| --- | --- |
+| Система этого компьютера | macOS или Windows |
+| IP сервера | `&lt;IP_СЕРВЕРА&gt;` — из письма или панели хостинга |
+| Вход на сервер от хостинга | `root` + пароль из письма хостинга |
+| Токен GitHub | `&lt;ТОКЕН_GITHUB&gt;` — дадут отдельно |
+| Аккаунт Claude | `evolutioncar.nsk@gmail.com`, пароль дадут отдельно; нужна подписка Claude Pro или Max |
+
+Требования к серверу: чистый Ubuntu 22.04/24.04 (или Debian 12), от 2 ГБ RAM, **в стране, где доступен Claude** (например Нидерланды, Германия, США). Это обязательно: Claude Code обращается к API с самого сервера, и VPN на компьютере пользователя на это не влияет — на российском VPS установка оборвётся, а Claude не заработает.
+
+Ниже `IP` = IP сервера, `TOKEN` = токен GitHub.
+
+---
+
+## Шаг 1. Программы на этом компьютере
+
+**Windows: все команды дальше выполняй в Git Bash** (Пуск → Git Bash), не в PowerShell — тогда они одинаковые для обеих систем.
+
+macOS:
+
+```bash
+brew install --cask visual-studio-code   # нет Homebrew — скачать с https://code.visualstudio.com
+git --version                            # нет git — xcode-select --install, дождаться окна установки
+```
+
+Windows (PowerShell, один раз):
+
+```powershell
+winget install --id Git.Git -e
+winget install --id Microsoft.VisualStudioCode -e
+```
+
+Расширения VS Code (в новом терминале):
+
+```bash
+code --install-extension ms-vscode-remote.remote-ssh
+code --install-extension anthropic.claude-code
+```
+
+Если `code` не найдена (VS Code скачан вручную): открыть VS Code → `F1` → `Shell Command: Install &#x27;code&#x27; command in PATH` → повторить.
+
+Проверка: `git --version` и `code --version` печатают версии.
+
+## Шаг 2. Скачать набор на этот компьютер
+
+Токен вводится в запрос пароля, а `credential.helper=` отключает хранилище паролей — поэтому токен не остаётся ни в командной строке, ни в связке ключей, ни в `.git/config`:
+
+```bash
+cd ~ &amp;&amp; git -c credential.helper= clone https://github.com/tema-mail/claude-codex-kit.git claude-codex-kit
+```
+
+На запрос `Username` ввести `x-access-token`, на `Password` — токен (вводит пользователь; в терминале он не отображается).
+
+Проверка: `ls ~/claude-codex-kit/install.sh` и `grep -c token ~/claude-codex-kit/.git/config` → файл есть, счётчик `0`.
+
+Разложить скиллы и правила локально (для Codex и Claude Code на этом компьютере):
+
+```bash
+cd ~/claude-codex-kit &amp;&amp; bash install.sh
+```
+
+Проверка: в конце «Готово.», «Скиллы Claude: не меньше 64», «Скиллы Codex: не меньше 76». Если у пользователя были свои скиллы, чисел будет больше — это нормально; заменённое лежит в `~/.kit-backup-&lt;дата&gt;`.
+
+## Шаг 3. SSH-ключ
+
+```bash
+mkdir -p ~/.ssh &amp;&amp; ssh-keygen -t ed25519 -f ~/.ssh/evo_vps_ed25519 -N &quot;&quot; -C &quot;evo-vps&quot;
+```
+
+## Шаг 4. Положить ключ на сервер (пароль вводит пользователь)
+
+Попроси пользователя выполнить в своём терминале и ввести пароль root от хостинга:
+
+```bash
+cat ~/.ssh/evo_vps_ed25519.pub | ssh root@IP &quot;mkdir -p ~/.ssh &amp;&amp; cat &gt;&gt; ~/.ssh/authorized_keys &amp;&amp; chmod 700 ~/.ssh &amp;&amp; chmod 600 ~/.ssh/authorized_keys&quot;
+```
+
+Первый раз спросит `Are you sure you want to continue connecting` → `yes`.
+
+Проверка (пароль уже не спрашивает): `ssh -i ~/.ssh/evo_vps_ed25519 root@IP &quot;echo ok&quot;` → `ok`.
+
+## Шаг 5. Рабочий пользователь `claude` на сервере
+
+```bash
+ssh -i ~/.ssh/evo_vps_ed25519 root@IP &#x27;bash -s&#x27; &lt;&lt;&#x27;EOF&#x27;
+set -e
+id claude &gt;/dev/null 2&gt;&amp;1 || adduser --disabled-password --gecos &quot;&quot; claude
+usermod -aG sudo claude
+echo &#x27;claude ALL=(ALL) NOPASSWD:ALL&#x27; &gt; /etc/sudoers.d/claude &amp;&amp; chmod 440 /etc/sudoers.d/claude
+mkdir -p /home/claude/.ssh
+cp /root/.ssh/authorized_keys /home/claude/.ssh/authorized_keys
+chown -R claude:claude /home/claude/.ssh &amp;&amp; chmod 700 /home/claude/.ssh &amp;&amp; chmod 600 /home/claude/.ssh/authorized_keys
+echo user-ok
+EOF
+```
+
+Проверка: вывод `user-ok`.
+
+## Шаг 6. Алиас сервера в SSH-конфиге
+
+Добавь в `~/.ssh/config` (Windows в Git Bash — тот же путь), подставив IP:
+
+```
+Host evo-vps
+    HostName IP
+    User claude
+    IdentityFile ~/.ssh/evo_vps_ed25519
+    IdentitiesOnly yes
+    ServerAliveInterval 30
+    ServerAliveCountMax 3
+```
+
+Проверка: `ssh evo-vps &quot;whoami&quot;` → `claude`.
+
+## Шаг 7. Закрыть вход по паролю (только после успешной проверки шага 6)
+
+```bash
+ssh evo-vps &#x27;printf &quot;PasswordAuthentication no\nKbdInteractiveAuthentication no\nPermitRootLogin prohibit-password\n&quot; | sudo tee /etc/ssh/sshd_config.d/00-keys-only.conf &gt;/dev/null &amp;&amp; sudo sshd -t &amp;&amp; (sudo systemctl restart ssh || sudo systemctl restart sshd) &amp;&amp; echo ssh-ok&#x27;
+```
+
+Проверка: `ssh-ok`, затем снова `ssh evo-vps whoami` → `claude`. Если второй проверки нет — не закрывай терминал, зайди через консоль в панели хостинга и удали `/etc/ssh/sshd_config.d/00-keys-only.conf`.
+
+## Шаг 8. Claude Code и набор на сервере
+
+Набор уезжает архивом по SSH — токен на сервер не попадает:
+
+```bash
+tar -C ~ -czf - claude-codex-kit | ssh evo-vps &#x27;tar -xzf - -C ~ &amp;&amp; bash ~/claude-codex-kit/vps-setup.sh&#x27;
+```
+
+Скрипт ставит git, Node.js 22, gitleaks, Claude Code и раскладывает набор. Занимает 3–7 минут (архив ~130 МБ).
+
+Проверка: в конце «Сервер готов», версии `node v22…` и `claude …`.
+
+## Шаг 9. VS Code → сервер
+
+1. VS Code → `F1` → `Remote-SSH: Connect to Host` → `evo-vps` → платформа **Linux**.
+2. Внизу слева зелёная плашка `SSH: evo-vps`.
+3. File → Open Folder → `/home/claude/projects` → «Yes, I trust the authors».
+4. Extensions → Claude Code → **Install in SSH: evo-vps** (если кнопка есть).
+
+## Шаг 10. Вход в Claude (делает пользователь)
+
+1. Включить VPN в стране, где работает Claude. Это нужно только для входа в браузере: из России сайт claude.ai не открывается.
+2. Панель Claude слева → **Log in** → в браузере **Continue with Google** → `evolutioncar.nsk@gmail.com` → пароль.
+3. Браузер покажет «Authentication successful» или код → вернуться в VS Code, код вставить в поле.
+4. После входа VPN можно выключить: логин хранится на сервере, а сам сервер стоит в стране, где Claude доступен.
+
+Запасной путь, если кнопки нет: терминал VS Code (`Ctrl+\``) → `claude` → `/login` → открыть ссылку в браузере → вставить код.
+
+## Шаг 11. Итоговая проверка
+
+В терминале VS Code (он уже на сервере, папка `/home/claude/projects`):
+
+```bash
+claude --version &amp;&amp; ls ~/.claude/skills | wc -l &amp;&amp; ls ~/.claude/agents | wc -l &amp;&amp; grep -c Astro ~/.claude/CLAUDE.md &amp;&amp; ls ~/.claude/projects/-home-claude-projects/memory | wc -l
+```
+
+Ожидается: версия Claude Code, не меньше `64`, не меньше `12`, число больше `0`, `13` файлов памяти.
+
+В панели Claude спросить: «какой стек для сайтов у нас закреплён?» → ответ: фронт Astro, бэкенд выбирает архитектор под задачу, анимации предпочтительно Preact.
+
+## Если сломалось
+
+| Симптом | Что делать |
+| --- | --- |
+| `Permission denied (publickey)` | Ключ не на сервере или не тот файл: повторить шаги 4–6. |
+| `Connection closed` до ввода пароля | Сервер временно забанил IP: подождать 15–60 мин или сменить IP (VPN); запасной вход — консоль в панели хостинга. |
+| `git clone`: 401 или 403 | Токен неверный или истёк — попросить новый. |
+| Установщик Claude Code не скачивается | Сервер в стране, где Claude недоступен. Нужен другой VPS; VPN на компьютере не поможет. |
+| `claude: command not found` | Открыть новый терминал или `export PATH=&quot;$HOME/.local/bin:$PATH&quot;`. |
+| Claude пишет «not available in your region» | VPN выключен или страна не та; включить и повторить Log in. |
+| Windows: `ssh` не найден | Settings → Apps → Optional features → OpenSSH Client. |
+| `apt-get`: could not get lock | Идут автообновления; скрипт ждёт до 10 минут сам, иначе подождать и запустить `bash ~/claude-codex-kit/vps-setup.sh` снова. |
+
+## Обновление набора потом
+
+```bash
+cd ~/claude-codex-kit &amp;&amp; git pull &amp;&amp; bash install.sh     # на компьютере, спросит логин и токен
+tar -C ~ -czf - claude-codex-kit | ssh evo-vps &#x27;tar -xzf - -C ~ &amp;&amp; bash ~/claude-codex-kit/install.sh&#x27;   # на сервер
+```
+</pre>
+  </div>
+  <p class="note">Этот же текст лежит в репозитории файлом <code>CODEX-ИНСТРУКЦИЯ.md</code>.</p>
+</section>
+
+<section class="step" id="s3">
+  <div class="step-head"><span class="step-num">3</span><h2>Что будет по шагам</h2></div>
+  <ol class="flow">
+    <li><span class="n">1</span><div><b>Программы.</b> Git, VS Code, расширения Remote-SSH и Claude Code. <span class="who ai">Codex</span></div></li>
+    <li><span class="n">2</span><div><b>Набор на компьютер.</b> Скачивает репозиторий и раскладывает скиллы локально. <span class="who me">дай токен GitHub</span></div></li>
+    <li><span class="n">3</span><div><b>SSH-ключ.</b> Создаёт ключ <code>evo_vps_ed25519</code>. <span class="who ai">Codex</span></div></li>
+    <li><span class="n">4</span><div><b>Ключ на сервер.</b> Одна команда, она спросит пароль root. <span class="who me">введи пароль</span></div></li>
+    <li><span class="n">5</span><div><b>Пользователь claude</b> на сервере с правами администратора. <span class="who ai">Codex</span></div></li>
+    <li><span class="n">6</span><div><b>Алиас <code>evo-vps</code></b> в SSH-конфиге. <span class="who ai">Codex</span></div></li>
+    <li><span class="n">7</span><div><b>Вход только по ключу.</b> Пароль на сервере отключается. <span class="who ai">Codex</span></div></li>
+    <li><span class="n">8</span><div><b>Claude Code на сервере.</b> Node 22, gitleaks, Claude Code и весь набор, 2–5 минут. <span class="who ai">Codex</span></div></li>
+    <li><span class="n">9</span><div><b>VS Code к серверу.</b> Connect to Host → <code>evo-vps</code> → папка <code>/home/claude/projects</code>. <span class="who me">клики в VS Code</span></div></li>
+    <li><span class="n">10</span><div><b>Вход в Claude.</b> Включи VPN, нажми Log in, затем Continue with Google под <code>evolutioncar.nsk@gmail.com</code>. <span class="who me">вход в браузере</span></div></li>
+    <li><span class="n">11</span><div><b>Проверка.</b> Сверка количества скиллов и агентов, вопрос Claude про стек. <span class="who ai">Codex</span></div></li>
+  </ol>
+</section>
+
+<section class="step" id="s4">
+  <div class="step-head"><span class="step-num">4</span><h2>Что в наборе</h2></div>
+  <div class="tbl">
+    <table>
+      <thead><tr><th>Что</th><th>Куда ставится</th><th>Сколько</th></tr></thead>
+      <tbody>
+        <tr><td>Правила Claude</td><td><code>~/.claude/CLAUDE.md</code></td><td><span class="num">1</span></td></tr>
+        <tr><td>Агенты и субагенты Claude</td><td><code>~/.claude/agents</code></td><td><span class="num">12</span></td></tr>
+        <tr><td>Скиллы Claude</td><td><code>~/.claude/skills</code></td><td><span class="num">64</span></td></tr>
+        <tr><td>Хуки и настройки</td><td><code>~/.claude/hooks</code>, <code>settings.json</code></td><td><span class="num">2 + 1</span></td></tr>
+        <tr><td>Память</td><td><code>~/.claude/projects/…/memory</code></td><td><span class="num">11</span></td></tr>
+        <tr><td>Правила и агенты Codex</td><td><code>~/.codex/AGENTS.md</code>, <code>~/.codex/agents</code></td><td><span class="num">1 + 2</span></td></tr>
+        <tr><td>Скиллы Codex</td><td><code>~/.codex/skills</code>, <code>~/.agents/skills</code></td><td><span class="num">76 + 16</span></td></tr>
+        <tr><td>Всё одним файлом</td><td><code>ВСЁ-В-ОДНОМ.md</code> в репозитории</td><td><span class="num">16 МБ</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout warn"><p><b>Ключей сервисов в наборе нет:</b> OpenRouter, Segmind, Scrape Creators, база viberendered. Без них соответствующие скиллы работают только как справочники. Ключи кладутся вручную в <code>~/.claude/secrets/&lt;имя&gt;.key</code>.</p></div>
+</section>
+
+<section class="step" id="s5">
+  <div class="step-head"><span class="step-num">5</span><h2>Проверка</h2></div>
+  <div class="prose"><p>В терминале VS Code (он уже на сервере):</p></div>
+  <div class="cmd"><pre>claude --version &amp;&amp; ls ~/.claude/skills | wc -l &amp;&amp; ls ~/.claude/agents | wc -l</pre><button type="button" data-copy>Копировать</button></div>
+  <div class="prose"><p>Должно быть: версия, <code>64</code>, <code>12</code>. Потом в панели Claude:</p></div>
+  <div class="cmd"><pre>какой стек для сайтов у нас закреплён?</pre><button type="button" data-copy>Копировать</button></div>
+  <div class="prose"><p class="note">Правильный ответ: фронт Astro, бэкенд выбирает архитектор, анимации по возможности Preact.</p></div>
+</section>
+
+<section class="step" id="s6">
+  <div class="step-head"><span class="step-num">6</span><h2>Если сломалось</h2></div>
+  <div class="tbl">
+    <table>
+      <thead><tr><th>Симптом</th><th>Что делать</th></tr></thead>
+      <tbody>
+        <tr><td><code>Permission denied (publickey)</code></td><td>Ключ не попал на сервер или указан не тот файл. Повторить шаги 4–6.</td></tr>
+        <tr><td><code>Connection closed</code> до ввода пароля</td><td>Сервер временно заблокировал IP. Подождать 15–60 минут, сменить IP через VPN или зайти через консоль в панели хостинга.</td></tr>
+        <tr><td><code>git clone</code>: 401 или 403</td><td>Токен GitHub неверный или истёк. Попросить новый.</td></tr>
+        <tr><td><code>claude: command not found</code></td><td>Открыть новый терминал или выполнить <code>export PATH="$HOME/.local/bin:$PATH"</code>.</td></tr>
+        <tr><td>«not available in your region»</td><td>VPN выключен или выбрана не та страна. Включить VPN и снова нажать Log in.</td></tr>
+        <tr><td>Windows: <code>ssh</code> не найден</td><td>Settings → Apps → Optional features → OpenSSH Client.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="prose"><p>Обновить набор, когда в репозитории появятся новые скиллы:</p></div>
+  <div class="cmd"><pre>cd ~/claude-codex-kit &amp;&amp; git pull &amp;&amp; bash install.sh</pre><button type="button" data-copy>Копировать</button></div>
+</section>
+
+<footer>
+  <p>Набор собран 11.10.2026 с мака Артёма. Источник: <a href="https://github.com/tema-mail/claude-codex-kit" target="_blank" rel="noopener">github.com/tema-mail/claude-codex-kit</a> (приватный, нужен доступ).</p>
+</footer>
+
+</main>
+</div>
+</div>
+
+<script>
+function copyText(text, btn, label){
+  var done=function(){btn.textContent='Скопировано';setTimeout(function(){btn.textContent=label;},1600);};
+  var fallback=function(){try{var ta=document.createElement('textarea');ta.value=text;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);}catch(e){}done();};
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text).then(done,fallback);}else{fallback();}
+}
+document.querySelectorAll('[data-copy]').forEach(function(btn){
+  btn.addEventListener('click',function(){var pre=btn.parentElement.querySelector('pre');copyText(pre?pre.textContent:'',btn,'Копировать');});
+});
+document.getElementById('copy-prompt').addEventListener('click',function(){
+  copyText(document.getElementById('prompt-text').textContent,this,'Скопировать всё');
+});
+document.querySelectorAll('.check input').forEach(function(cb){
+  try{if(localStorage.getItem('chk-'+cb.id)==='1')cb.checked=true;}catch(e){}
+  cb.addEventListener('change',function(){try{localStorage.setItem('chk-'+cb.id,cb.checked?'1':'0');}catch(e){}});
+});
+</script>
+
+</body></html>
